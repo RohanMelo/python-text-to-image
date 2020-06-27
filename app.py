@@ -6,22 +6,23 @@ from PIL import Image, ImageDraw, ImageFont
 import textwrap
 
 
-# First, download image from an url. Using the more modern pathlib did not work
+# First, download image from an url. Note: Pathlib did not work in this case
 is_finished = False
 out_dir = os.getcwd()
 img_url = input("Type image url: ")
 buffer = tempfile.SpooledTemporaryFile(max_size=1e9)
-r = requests.get(img_url, stream=True)
-if r.status_code == 200:
+request = requests.get(img_url, stream=True)
+
+if request.status_code == 200:
     downloaded = 0
-    filesize = int(r.headers['content-length'])
-    for chunk in r.iter_content():
+    filesize = int(request.headers['content-length'])
+    for chunk in request.iter_content():
         downloaded += len(chunk)
         buffer.write(chunk)
         print(downloaded/filesize)
     buffer.seek(0)
-    i = Image.open(io.BytesIO(buffer.read()))
-    i.save(os.path.join(out_dir, os.path.basename(img_url)), quality=85)
+    image = Image.open(io.BytesIO(buffer.read()))
+    image.save(os.path.join(out_dir, os.path.basename(img_url)), quality=85)
     is_finished = True
 buffer.close()
 
